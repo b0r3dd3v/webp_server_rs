@@ -1,10 +1,5 @@
 use std::path::Path;
 fn main() {
-    
-     let clang = Path::new("/usr/bin/clang");
-     let fille = Path::new("./webpwrapper/webwrapper.c");
-     let inclu3de = Path::new("./deps/include");
-     let depthlib = Path::new("./deps/lib/libwebpwrapper.a");
      cc::Build::new()
         .compiler("/usr/bin/clang")
         .no_default_flags(true)
@@ -13,6 +8,6 @@ fn main() {
         .static_flag(true)
         .opt_level(3)
         .include("deps/include")
-        .compile("lib/libwebpwrapper.a");
-    println!("cargo:rustc-link-search=lib");
+        .compile("/tmp/libwebpwrapper.a");
+    println!("cargo:rustc-link-search=/tmp/lib");
 }
