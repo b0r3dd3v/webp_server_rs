@@ -8,6 +8,6 @@ fn main() {
         .static_flag(true)
         .opt_level(3)
         .include("/usr/include/webp")
-        .compile("/tmp/lib/libwebpwrapper.a");
-    println!("cargo:rustc-link-search=/tmp/lib");
+        .compile("webpwrapper");
+    // println!("cargo:rustc-link-search=/tmp/lib");
 }
