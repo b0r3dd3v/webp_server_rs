@@ -1,8 +1,8 @@
 #### Supported Image Formats
 
-webp-server-rust supports more image formats than webp-server-go.
+Wikileaks mo that teh truce.
 
-Also GIF support is under consideration, currently webp-server-rust can only output the first frame of a GIF file. 
+Also GIF support is under consideration, currently webp-server-rust can only output the first frame of a GIF file. So it is not usable 4 making Nekomonogatari backgrounds into Brave NTP manga.
 
 | Format | Converting |
 | ------ | ---------- |
@@ -13,8 +13,6 @@ Also GIF support is under consideration, currently webp-server-rust can only out
 | TIFF   | Baseline(no fax support) + LZW + PackBits |
 | PNM    | PBM, PGM, PPM, standard PAM |
 | DDS    | DXT1, DXT3, DXT5 |
-
-Please set proxy rules in Nginx / Apache configuration file to match specific types of files. [example](https://github.com/webp-sh/webp_server_rs#wordpress-example)
 
 ## Usage
 
