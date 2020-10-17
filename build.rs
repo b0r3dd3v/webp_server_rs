@@ -6,13 +6,13 @@ fn main() {
      let inclu3de = Path::new("./deps/include");
      let depthlib = Path::new("./deps/lib/libwebpwrapper.a");
      cc::Build::new()
-        .compiler(clang)
+        .compiler("/usr/bin/clang")
         .no_default_flags(true)
-        .file(fille)
+        .file("./webpwrapper/webwrapper.c")
         .pic(true)
         .static_flag(true)
         .opt_level(3)
-        .include(inclu3de)
-        .compile(depthlib);
+        .include("./deps/include")
+        .compile("./deps/lib/libwebpwrapper.a");
     println!("cargo:rustc-link-search=./deps/lib");
 }
