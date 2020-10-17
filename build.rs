@@ -3,7 +3,7 @@ fn main() {
      cc::Build::new()
         .compiler("/usr/bin/clang")
         .no_default_flags(true)
-        .file("webwrapper.c")
+        .file("webpwrapper.c")
         .pic(true)
         .static_flag(true)
         .opt_level(3)
