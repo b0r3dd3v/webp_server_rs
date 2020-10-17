@@ -40,8 +40,7 @@ Create a config.json as follows to face your need.
     "preprocessin": 1,
     "partition_limit": 0,
     "exact": 1,
-    "use_sharp_yuv": 1,
-    
+    "use_sharp_yuv": 1
   }
 }
 ```
