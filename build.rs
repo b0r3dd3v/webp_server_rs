@@ -5,6 +5,7 @@ fn main() {
         .no_default_flags(true)
         .file("webpwrapper.c")
         .pic(true)
+        .flag("-fPIE")
         .static_flag(true)
         .opt_level(3)
         .include("/usr/include/webp")
