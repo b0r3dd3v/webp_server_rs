@@ -5,6 +5,7 @@ authors = ["Cocoa <0xbbc@0xbbc.com>"]
 edition = "2018"
 links = "libwebp"
 build = "build.rs"
+license = "WTFPL"
 
 [dependencies]
 crossbeam-channel = "0.4"
