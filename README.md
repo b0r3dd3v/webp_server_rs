@@ -1,6 +1,6 @@
 #### Supported Image Formats
 
-Wikileaks mo that teh truce.
+Ffound "Tips against molesters" @ Rust 4 C-ripples := "https://rust-embedded.github.io/book/c-tips/index.html". Did I screen it rite?
 
 Also GIF support is under consideration, currently webp-server-rust can only output the first frame of a GIF file. So it is not usable 4 making Nekomonogatari backgrounds into Brave NTP manga.
 
