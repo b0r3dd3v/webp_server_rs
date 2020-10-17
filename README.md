@@ -1,49 +1,3 @@
-# webp-server-rs ![Build Status](https://travis-ci.com/webp-sh/webp_server_rs.svg?branch=master)
-Generate WebP image on-the-fly with Rust! Support all main platforms, macOS, Linux and Windows.
-
-## Background
-
-Speaking of switching to WebP image, at the first glance, I just did it with [a very naive approach](https://blog.0xbbc.com/2019/10/moving-to-webp-image-with-fallback-to-png/).
-
-Then @Nova wrote a Node.JS server that can serve JPG/PNGs as WebP format on-the-fly. You can find that at [n0vad3v/webp_server](https://github.com/n0vad3v/webp_server).
-
-A few days ago, @Nova and @Benny rewrite the WebP Server in Golang, [webp-sh/webp_server_go](https://github.com/webp-sh/webp_server_go). 
-
-And that looks really promising, the size of the webp server, according to its description, had reduced from 43 MB to 15 MB, and it is a single binary instead of webp_server with node_modules.
-
-I cloned that project and added [a tiny feature](https://github.com/webp-sh/webp_server_go/pull/2). However, I just found that although it is absolutely easy to implement the tiny feature, there is a potential design issue with the `fasthttp` module. In order to get everything work, it took me about 4 hours to debug on it.
-
-Finally, it turned out to be a pointer of an internal variable (`ctx.Request.uri`, or so) was directly returned from `ctx.Path()`, and if users invoke `ctx.SendFile(filepath)`, the `ctx.Request.uri` will be set to `filepath`, which will also propagate to all variables that hold the shared value of `ctx.Path()`. You may visit my blog post for [details](https://blog.0xbbc.com/2020/02/note-about-encountered-memory-changes-for-no-reason-in-golang/).
-
-## Now
-
-Well, in aforementioned blog post, I said that it would be better if it was written in Rust. Now, let's make it come true and push the webp server even further.
-
-### Comparison
-
-#### Size
-
-- `webp_server` with `node_modules`: 43M
-
-|                                                              | Darwin amd64 | Linux amd64 | Linux arm64 | Windows amd64 |
-| ------------------------------------------------------------ | ------------- | ----------- | ----------- | ------------- |
-| [webp-server-go](https://github.com/webp-sh/webp_server_go)  | 10.6 MB       | 9.52 MB     | 8.83 MB     | 9.31 MB       |
-| [webp-server-rs](https://github.com/BlueCocoa/webp_server_rs) | 2.0 MB        | 2.5 MB      | 2.07 MB     | 2.41 MB       |
-
-#### Convenience
-
-- webp_server: Clone the repo -> npm install -> run with pm2
-- webp-server-go: Download a single binary -> Run
-- webp-server-rs: Download a single binary -> Run
-
-#### Performance
-
-Not really tested. But IMHO it should be as fast as golang version.
-
-#### Precision Control
-
-webp-server-rust allows you set directory-level config and all libwebp parameters are available to you.
-
 #### Supported Image Formats
 
 webp-server-rust supports more image formats than webp-server-go.
@@ -63,17 +17,9 @@ Also GIF support is under consideration, currently webp-server-rust can only out
 Please set proxy rules in Nginx / Apache configuration file to match specific types of files. [example](https://github.com/webp-sh/webp_server_rs#wordpress-example)
 
 ## Usage
-Shamefully copy and paste most of the usage guidelines from [webp-sh/webp_server_go](https://github.com/webp-sh/webp_server_go), given that they are basically identical.
 
-Regarding the `img_path` section in config.json. If you are serving images at https://example.com/images/aya.jpg and your files are at /var/www/site/images/aya.jpg, then `img_path` shall be `/var/www/site`.
-
-### 1. Download or build the binary
-
-Download the webp-server from [release](https://github.com/BlueCocoa/webp-server-rs/releases) page.
-
-The `webp-server-rs-${ver}-linux-amd64.deb` package will ONLY INSTALL the binary to `/usr/local/bin/webp-server-rs`, the config file needs to be edited following the guideline below.
-
-Wanna build your own binary? Check out [build](#build-your-own-binaries) section
+First, cargo install webp-servo --git https://github.com/b0r3dd3v/webp_server_rs
+It has been where it was forked from, but now it can be installed in a single comma. Saves yuu time, when yuv been #!ing original crate just 2 get WEB:P converter alive&kicking 2 repack HTTP/3 client church stuff.
 
 ### 2. config file
 
@@ -86,7 +32,18 @@ Create a config.json as follows to face your need.
   "img_path": "./images",
   "webp_path": "./cache",
   "global_config":  {
-    "quality": 80
+    "lossless": 1,
+    "quality": 0,
+    "method": 6,
+    "image_hint": "photo",
+    "segments": 1,
+    "alpha_compression": 0,
+    "pass": 1,
+    "preprocessin": 1,
+    "partition_limit": 0,
+    "exact": 1,
+    "use_sharp_yuv": 1,
+    
   }
 }
 ```
@@ -108,7 +65,7 @@ int method;             // quality/speed trade-off (0=fast, 6=slower-better)
 string image_hint;      // Hint for image type (lossless only for now).
                         // - default: default preset.
                         // - picture: digital picture, like portrait, inner shot
-                        // - photo:   outdoor photograph, with natural lighting
+                        // - photo:   outdoor photograph, with natural lighting. But all Natsuki-shots have no lighting and even during day she covers 4m Sun?
                         // - graph:   Discrete tone image (graph, map-tile etc).
 
 int target_size;        // if non-zero, set the desired target size in bytes.
@@ -164,6 +121,8 @@ int use_delta_palette;  // reserved for future lossless feature
 int use_sharp_yuv;      // if needed, use sharp (and slow) RGB->YUV conversion
 ```
 
+Holy mom, wut a tl;dr. I need mo samples 4m this specimen, so xcuse me.
+
 #### Directory-Level Config
 
 By placing a `.webp-conf` in intented directories, you can control the encoding `mode` and `quality` applied on the images inside that directory (the directory-level config will NOT propagate to its subdirectories).
@@ -184,43 +143,6 @@ images
 │   ├── .webp-conf
 │   └── webp-server.jpeg (480911 bytes)
 └── webp-server.jpeg (480911 bytes)
-```
-
-And the config files,
-`config.json`, lossy encoding, quality will be used to reduce the size of output image
-
-```json
-{
-  "host": "127.0.0.1",
-  "port": 3333,
-  "img_path": "./images",
-  "webp_path": "./cache",
-  "global_config":  {
-    "quality": 80
-  }
-}
-```
-
-`images/lossless/.webp-conf`, lossless encoding
-```json
-{
-  "lossless": 1
-}
-```
-
-`images/nearlossless/.webp-conf`, near lossless encoding, `quality` and `near_lossless` will be used to reduce the size of output image
-```json
-{
-  "quality": 60,
-  "near_lossless": 80
-}
-```
-
-`images/lossy/.webp-conf`, lossy encoding, quality will be used to reduce the size of output image
-```json
-{
-  "quality": 40
-}
 ```
 
 And corresponding WebP images will be generated based on aforementioned rules,
@@ -266,98 +188,3 @@ To set max allowed number of threads that prefetch can use, using `-j`.
 # or
 ./webp-server-rs --config /path/to/config.json --prefetch --jobs 4 
 ```
-
-#### screen or tmux
-
-Use screen or tmux to avoid being terminated. Let's take screen for example
-
-```bash
-screen -S webp
-./webp-server-rs --config /path/to/config.json
-```
-
-#### systemd
-
-Don't worry, we've got you covered!
-
-```bash
-cp webp-image.service /lib/systemd/system/
-systemctl daemon-reload
-systemctl enable webp-image.service
-systemctl start webp-image.service
-```
-
-This systemd service script will assume that the binary is located at `/usr/local/bin/webp-server-rs` and the config file is located at `/etc/webp-server-rs/config.json`. It also uses `/var/cache/webps` as working directory.
-
-### 4. Nginx proxy_pass
-
-Let Nginx to `proxy_pass http://localhost:3333/;`, and your `webp-server-rs` is on-the-fly
-
-#### WordPress example
-
-```
-location ~* \.(png|jpg|jpeg)$ {
-    proxy_pass http://127.0.0.1:3333;
-}
-```
-
-### Build your own binaries
-Install latest version of Rust, clone the repo, and then...
-
-#### 1. install cmake and curl with apt or whatever package manager on your system
-```bash
-# debian
-apt install cmake curl
-```
-
-#### 2. download and build libwebp
-```bash
-# macOS / Linux
-make libwebp
-
-# windows
-curl https://codeload.github.com/webmproject/libwebp/tar.gz/v1.1.0 -o v1.1.0.tar.gz
-tar -xzf v1.1.0.tar.gz
-mkdir -p libwebp-1.1.0/build && cd libwebp-1.1.0/build
-## for VS 9.0 to VS 15.0
-## please set generator that fits your system, e.g., "Visual Studio 15 2017 Win64"
-## for VS 16.0
-## you may use "Visual Studio 15 2017 Win64", or -G "Visual Studio 16 2019" -A x64
-cmake -G "Visual Studio 15 2017 Win64" \
-  -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../../deps \
-  -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF \
-  -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF \
-  -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_WEBP_JS=OFF \
-  -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_NEAR_LOSSLESS=ON ..
-cmake --build . --config Release
-cmake --install .
-cd ../..
-```
-
-#### 3. build static webpwrapper library
-```bash
-# macOS / Linux, and windows user who has `make`
-make libwebpwrapper
-
-# windows
-mkdir -p webpwrapper/build
-cd webpwrapper/build
-## for VS 9.0 to VS 15.0
-## please set generator that fits your system, e.g., "Visual Studio 15 2017 Win64"
-## for VS 16.0
-## you may use "Visual Studio 15 2017 Win64", or -G "Visual Studio 16 2019" -A x64
-cmake -G "Visual Studio 15 2017 Win64" ..
-cmake --build . --config Release
-cmake --install .
-```
-
-#### 4. build webp-server-rs
-```bash
-# binary will be located at `target/release/webp-server-rs`
-cargo build --release
-
-# test
-cargo test --release
-```
-
-[![forthebadge](https://forthebadge.com/images/badges/contains-cat-gifs.svg)]()  [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)]() 
