@@ -20,6 +20,9 @@ threadpool = "1"
 tokio = { version = "0.2", features = ["sync", "fs", "macros"] }
 walkdir = "2"
 
+[build-dependencies]
+cc = { version = "1.0", features = ["parallel"] }
+
 [profile.release]
-opt-level = 'z'
+opt-level = '3'
 lto = true
